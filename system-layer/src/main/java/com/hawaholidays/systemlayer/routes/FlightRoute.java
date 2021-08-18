@@ -6,7 +6,6 @@ import org.apache.camel.model.rest.RestBindingMode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.hawaholidays.systemlayer.model.FlightList;
 import com.hawaholidays.systemlayer.service.FlightService;
 
 @Component

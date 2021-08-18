@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hawaholidays.systemlayer.model.Flight;
-import com.hawaholidays.systemlayer.model.FlightList;
 import com.hawaholidays.systemlayer.repository.FlightRepository;
 
 @Service
