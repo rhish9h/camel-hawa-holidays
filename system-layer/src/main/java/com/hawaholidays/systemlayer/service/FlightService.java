@@ -1,14 +1,24 @@
 package com.hawaholidays.systemlayer.service;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.hawaholidays.systemlayer.model.Flight;
+import com.hawaholidays.systemlayer.model.FlightList;
+import com.hawaholidays.systemlayer.repository.FlightRepository;
 
 @Service
 public class FlightService {
 
-	public Flight getFlights(String source, String destination) {
-		return new Flight(1, "Ryan Air", "BLR", "PUN", 2345);
+	@Autowired
+	private FlightRepository flightRepository;
+	
+	public List<Flight> getFlights(String source, String destination) {
+		List<Flight> flights = flightRepository.findBySourceAndDestination(source, destination);
+		
+		return flights;
 	}
 	
 }
