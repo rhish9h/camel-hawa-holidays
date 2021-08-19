@@ -25,7 +25,6 @@ public class RailwayRoute extends RouteBuilder {
 			.endRest();
 		
 		from("direct:getrailways")
-		.log("${header.source}")
 		.bean(railwayService, "getRailways(${header.source}, ${header.destination})");
 	}
 	

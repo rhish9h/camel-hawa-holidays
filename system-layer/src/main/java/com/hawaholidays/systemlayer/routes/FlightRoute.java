@@ -26,7 +26,6 @@ public class FlightRoute extends RouteBuilder {
 			.endRest();
 		
 		from("direct:getFlights")
-			.log("${header.source}")
 			.bean(flightService, "getFlights(${header.source}, ${header.destination})");
 	}
 }
