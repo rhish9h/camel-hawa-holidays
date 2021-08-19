@@ -19,7 +19,7 @@ public class FlightRoute extends RouteBuilder {
 		
 		restConfiguration()
 			.component("servlet")
-			.bindingMode(RestBindingMode.auto)
+			.bindingMode(RestBindingMode.json)
 	        .port(8085);
 		
 		rest("/flights")
@@ -28,7 +28,6 @@ public class FlightRoute extends RouteBuilder {
 			.get("?source={source}&destination={destination}")
 			.route()
 			.to("direct:getFlights")
-			.marshal().json(JsonLibrary.Jackson)
 			.endRest();
 		
 		from("direct:getFlights")
