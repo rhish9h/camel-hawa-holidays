@@ -13,4 +13,5 @@ public class Package {
 	private Hotel hotel;
 	private Transport transport;
 	private Cab cab;
+	private Double totalPrice;
 }

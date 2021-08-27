@@ -21,6 +21,7 @@ public class CabHotelAggregator implements AggregationStrategy {
 	public Exchange aggregate(Exchange oldExchange, Exchange newExchange) {
 		List<Package> packages;
 		
+		//TODO remove code repetition
 		if (oldExchange == null) {
 			packages = new ArrayList<>();
 			List<Object> facilities = newExchange.getIn().getBody(List.class);
@@ -87,26 +88,6 @@ public class CabHotelAggregator implements AggregationStrategy {
 		} 
 		
 		return packages;
-	}
-	
-	private Transport mapFlightToTransport(Flight flight) {
-		return Transport.builder()
-						.transportId(flight.getFlightId())
-						.name(flight.getName())
-						.source(flight.getSource())
-						.destination(flight.getDestination())
-						.price(flight.getPrice())
-						.build();
-	}
-	
-	private Transport mapRailwayToTransport(Railway railway) {
-		return Transport.builder()
-						.transportId(railway.getRailwayId())
-						.name(railway.getName())
-						.source(railway.getSource())
-						.destination(railway.getDestination())
-						.price(railway.getPrice())
-						.build();
 	}
 
 }

@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.hawaholidays.processlayer.aggregators.CabHotelAggregator;
+import com.hawaholidays.processlayer.aggregators.PackageAggregator;
+import com.hawaholidays.processlayer.aggregators.TransportAggregator;
 import com.hawaholidays.processlayer.model.Cab;
 import com.hawaholidays.processlayer.model.Flight;
 import com.hawaholidays.processlayer.model.Hotel;
@@ -23,7 +25,13 @@ public class HolidayPackageRoute extends RouteBuilder {
 	private int port;
 	
 	@Autowired
-	private CabHotelAggregator packageAggregator;
+	private CabHotelAggregator cabHotelAggregator;
+	
+	@Autowired
+	private TransportAggregator transportAggregator;
+	
+	@Autowired
+	private PackageAggregator packageAggregator;
 	
 	@Override
 	public void configure() throws Exception {
@@ -39,10 +47,21 @@ public class HolidayPackageRoute extends RouteBuilder {
 			.get("?source={source}&destination={destination}")
 			.route()
 			.multicast(packageAggregator)
-			.parallelProcessing()
-			.to("direct:getCabs", "direct:getHotels")
+//			.parallelProcessing()
+//			.to("direct:getCabs", "direct:getHotels")
+			.to("direct:getCabsAndHotels", "direct:getFlightsAndRailways")
 			
+//			.to("direct:getCabsAndHotels")
+//			.to("direct:getFlightsAndRailways")
 			.endRest();
+		
+		from("direct:getCabsAndHotels")
+			.multicast(cabHotelAggregator)
+			.to("direct:getCabs", "direct:getHotels");
+		
+		from("direct:getFlightsAndRailways")
+			.multicast(transportAggregator)
+			.to("direct:getFlights", "direct:getRailways");
 		
 		from("direct:getFlights")
 			.removeHeaders("CamelHttp*")

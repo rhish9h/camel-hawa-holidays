@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class Transport {
 	private long transportId;
+	private String transportType;
 	private String name;
 	private String source;
 	private String destination;
