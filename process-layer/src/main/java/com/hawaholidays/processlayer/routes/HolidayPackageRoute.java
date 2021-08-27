@@ -47,12 +47,7 @@ public class HolidayPackageRoute extends RouteBuilder {
 			.get("?source={source}&destination={destination}")
 			.route()
 			.multicast(packageAggregator)
-//			.parallelProcessing()
-//			.to("direct:getCabs", "direct:getHotels")
 			.to("direct:getCabsAndHotels", "direct:getFlightsAndRailways")
-			
-//			.to("direct:getCabsAndHotels")
-//			.to("direct:getFlightsAndRailways")
 			.endRest();
 		
 		from("direct:getCabsAndHotels")
