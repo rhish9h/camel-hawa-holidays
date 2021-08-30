@@ -8,7 +8,10 @@ import org.springframework.stereotype.Service;
 import com.hawaholidays.systemlayer.model.Hotel;
 import com.hawaholidays.systemlayer.repository.HotelRepository;
 
+import lombok.AllArgsConstructor;
+
 @Service
+@AllArgsConstructor
 public class HotelService {
 
 	@Autowired

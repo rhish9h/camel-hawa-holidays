@@ -8,7 +8,10 @@ import org.springframework.stereotype.Service;
 import com.hawaholidays.systemlayer.model.Flight;
 import com.hawaholidays.systemlayer.repository.FlightRepository;
 
+import lombok.AllArgsConstructor;
+
 @Service
+@AllArgsConstructor
 public class FlightService {
 
 	@Autowired
