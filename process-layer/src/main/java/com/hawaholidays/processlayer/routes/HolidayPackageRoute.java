@@ -28,19 +28,25 @@ public class HolidayPackageRoute extends RouteBuilder {
 			.produces("application/json")
 			.get("?source={source}&destination={destination}")
 			.route()
+			.to("{{route.getPackages.start}}")
+			.endRest();
+		
+		from("{{route.getPackages.start}}")
 			.multicast(packageAggregator)
 			.to("{{route.getCabsAndHotels.start}}", "{{route.getFlightsAndRailways.start}}")
-			.endRest();
+			.end()
+			.to("{{route.getPackages.end}}");
 		
 		from("{{route.getCabsAndHotels.start}}")
 			.multicast(cabHotelAggregator)
-			.to("{{route.getCabs.start}}", "{{route.getHotels.start}}");
+			.to("{{route.getCabs.start}}", "{{route.getHotels.start}}")
+			.end()
+			.to("{{route.getCabsAndHotels.end}}");
 		
 		from("{{route.getFlightsAndRailways.start}}")
 			.multicast(transportAggregator)
 			.to("{{route.getFlights.start}}", "{{route.getRailways.start}}")
 			.end()
-//			.log("${body}")
 			.to("{{route.getFlightsAndRailways.end}}");
 	}
 
