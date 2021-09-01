@@ -47,39 +47,38 @@ public class HolidayPackageRoute extends RouteBuilder {
 			.get("?source={source}&destination={destination}")
 			.route()
 			.multicast(packageAggregator)
-			.to("direct:getCabsAndHotels", "direct:getFlightsAndRailways")
+			.to("{{route.getCabsAndHotels.start}}", "{{route.getFlightsAndRailways.start}}")
 			.endRest();
 		
-		from("direct:getCabsAndHotels")
+		from("{{route.getCabsAndHotels.start}}")
 			.multicast(cabHotelAggregator)
-			.to("direct:getCabs", "direct:getHotels");
+			.to("{{route.getCabs.start}}", "{{route.getHotels.start}}");
 		
-		from("direct:getFlightsAndRailways")
+		from("{{route.getFlightsAndRailways.start}}")
 			.multicast(transportAggregator)
-			.to("direct:getFlights", "direct:getRailways");
+			.to("{{route.getFlights.start}}", "{{route.getRailways.start}}");
 		
-		from("direct:getFlights")
+		from("{{route.getFlights.start}}")
 			.removeHeaders("CamelHttp*")
-			.recipientList(simple("rest:get:/camel/flights?bridgeEndpoint=true&source={source}&destination={destination}"))
+			.recipientList(simple("{{route.getFlights.restEndpoint}}"))
 			.unmarshal(new ListJacksonDataFormat(Flight.class))
 			.log("${body}");
 		
-		from("direct:getRailways")
+		from("{{route.getRailways.start}}")
 			.removeHeaders("CamelHttp*")
-			.recipientList(simple("rest:get:/camel/railways?bridgeEndpoint=true&source={source}&destination={destination}"))
+			.recipientList(simple("{{route.getRailways.restEndpoint}}"))
 			.unmarshal(new ListJacksonDataFormat(Railway.class))
 			.log("${body}");
 		
-		from("direct:getCabs")
+		from("{{route.getCabs.start}}")
 			.removeHeaders("CamelHttp*")
-			.recipientList(simple("rest:get:/camel/cabs?bridgeEndpoint=true&destination={destination}"))
+			.recipientList(simple("{{route.getCabs.restEndpoint}}"))
 			.unmarshal(new ListJacksonDataFormat(Cab.class))
 			.log("${body}");
 		
 		from("{{route.getHotels.start}}")
 			.removeHeaders("CamelHttp*")
 			.recipientList(simple("{{route.getHotels.restEndpoint}}"))
-//			.log("${body}")
 			.unmarshal(new ListJacksonDataFormat(Hotel.class))
 			.log("${body}");
 	}
