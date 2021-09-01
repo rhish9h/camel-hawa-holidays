@@ -1,7 +1,8 @@
 package com.hawaholidays.processlayer.routes;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,24 +18,30 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.hawaholidays.processlayer.model.Cab;
+import com.hawaholidays.processlayer.model.Hotel;
 import com.hawaholidays.processlayer.model.Package;
+import com.hawaholidays.processlayer.model.Transport;
 
 @ActiveProfiles("test")
 @SpringBootTest()
 @MockEndpoints
-class HolidayPackageRouteTest {
+class IntermediatePackageAggregationsRouteTest {
 
 	@Autowired
 	private ProducerTemplate template;
-	
-	@EndpointInject("mock:getPackages")
-	private MockEndpoint mockGetPackages;
 	
 	@EndpointInject("mock:getFlightsEnd")
 	private MockEndpoint mockGetFlightsRest;
 	
 	@EndpointInject("mock:getRailwaysEnd")
 	private MockEndpoint mockGetRailwaysRest;
+	
+	@EndpointInject("mock:getFlightsAndRailways")
+	private MockEndpoint mockGetFlightsAndRailways;
+	
+	@EndpointInject("mock:getCabsAndHotels")
+	private MockEndpoint mockGetCabsAndHotels;
 	
 	@EndpointInject("mock:getHotelsEnd")
 	private MockEndpoint mockGetHotelsRest;
@@ -43,8 +50,7 @@ class HolidayPackageRouteTest {
 	private MockEndpoint mockGetCabsRest;
 	
 	@Test
-	void getPackagesTest() {
-		
+	void testGetFlightsAndRailways() throws InterruptedException {
 		mockGetFlightsRest.returnReplyBody(new Expression() {
 
 			@Override
@@ -61,6 +67,31 @@ class HolidayPackageRouteTest {
 			}
 			
 		});
+		
+		List<Package> expectedPackages = new ArrayList<>();
+		expectedPackages.add(Package.builder()
+				.transport(new Transport(1, "flight", "Air India", "PUN", "BLR", 5234))
+				.build());
+		expectedPackages.add(Package.builder()
+				.transport(new Transport(4, "flight", "Indigo", "PUN", "BLR", 5034))
+				.build());
+		expectedPackages.add(Package.builder()
+				.transport(new Transport(1, "railway", "Shatabdi", "PUN", "BLR", 3500))
+				.build());
+		expectedPackages.add(Package.builder()
+				.transport(new Transport(2, "railway", "Duranto", "PUN", "BLR", 3900))
+				.build());
+		
+		Map<String, Object> headers = new HashMap<>();
+		headers.put("source", "PUN");
+		headers.put("destination", "BLR");
+		template.sendBodyAndHeaders("direct:getFlightsAndRailways", "{}", headers);
+		List<Package> actualPackages = mockGetFlightsAndRailways.getExchanges().get(0).getIn().getBody(List.class);
+		assertIterableEquals(expectedPackages, actualPackages);
+	}
+	
+	@Test
+	void testGetCabsAndHotels() {
 		mockGetCabsRest.returnReplyBody(new Expression() {
 
 			@Override
@@ -78,12 +109,33 @@ class HolidayPackageRouteTest {
 			
 		});
 		
+		List<Package> expectedPackages = new ArrayList<>();
+		expectedPackages.add(Package.builder()
+									.hotel(new Hotel(1L, "Oyo", 2, "BLR", 2100))
+									.cab(new Cab(1L, "Ola", "Micro", "BLR", 500))
+									.build());
+		
+		expectedPackages.add(Package.builder()
+									.hotel(new Hotel(1L, "Oyo", 2, "BLR", 2100))
+									.cab(new Cab(2L, "Ola", "Macro", "BLR", 600))
+									.build());
+		
+		expectedPackages.add(Package.builder()
+									.hotel(new Hotel(2L, "Air BNB", 3, "BLR", 3400))
+									.cab(new Cab(1L, "Ola", "Micro", "BLR", 500))
+									.build());
+		
+		expectedPackages.add(Package.builder()
+									.hotel(new Hotel(2L, "Air BNB", 3, "BLR", 3400))
+									.cab(new Cab(2L, "Ola", "Macro", "BLR", 600))
+									.build());
+							
 		Map<String, Object> headers = new HashMap<>();
 		headers.put("source", "PUN");
 		headers.put("destination", "BLR");
-		template.sendBodyAndHeaders("direct:getPackages", "{}", headers);
-		List<Package> actualPackages = mockGetPackages.getExchanges().get(0).getIn().getBody(List.class);
-		assertEquals(16, actualPackages.size());
+		template.sendBodyAndHeaders("direct:getCabsAndHotels", "{}", headers);
+		List<Package> actualPackages = mockGetCabsAndHotels.getExchanges().get(0).getIn().getBody(List.class);
+		assertIterableEquals(expectedPackages, actualPackages);
 	}
 
 }
