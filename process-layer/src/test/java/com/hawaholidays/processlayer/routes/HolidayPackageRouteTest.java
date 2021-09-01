@@ -1,6 +1,10 @@
 package com.hawaholidays.processlayer.routes;
 
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.camel.EndpointInject;
@@ -14,19 +18,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.hawaholidays.processlayer.model.Package;
+import com.hawaholidays.processlayer.model.Transport;
+
 @ActiveProfiles("test")
-@SpringBootTest
+@SpringBootTest()
 @MockEndpoints
 class HolidayPackageRouteTest{
 
 	@Autowired
 	private ProducerTemplate template;
-	
-	@EndpointInject("mock:getHotelsEnd")
-	private MockEndpoint mockGetHotelsRest;
-	
-	@EndpointInject("mock:getCabsEnd")
-	private MockEndpoint mockGetCabsRest;
 	
 	@EndpointInject("mock:getFlightsEnd")
 	private MockEndpoint mockGetFlightsRest;
@@ -34,40 +35,11 @@ class HolidayPackageRouteTest{
 	@EndpointInject("mock:getRailwaysEnd")
 	private MockEndpoint mockGetRailwaysRest;
 	
-	@Test
-	void testGetHotels() throws InterruptedException {
-		mockGetHotelsRest.expectedHeaderReceived("city", "BLR");
-		mockGetHotelsRest.returnReplyBody(new Expression() {
-
-			@Override
-			public <T> T evaluate(Exchange exchange, Class<T> type) {
-				return (T)"[{\"hotelId\":1,\"name\":\"Oyo\",\"guests\":2,\"city\":\"BLR\",\"price\":2100.0},{\"hotelId\":2,\"name\":\"Air BNB\",\"guests\":3,\"city\":\"BLR\",\"price\":3400.0}]";
-			}
-			
-		});
-		template.sendBodyAndHeader("direct:getHotels", "{}", "city", "BLR");
-		mockGetHotelsRest.assertIsSatisfied();
-	}
-
-	@Test
-	void testGetCabs() throws InterruptedException {
-		mockGetCabsRest.expectedHeaderReceived("destination", "BLR");
-		mockGetCabsRest.returnReplyBody(new Expression() {
-
-			@Override
-			public <T> T evaluate(Exchange exchange, Class<T> type) {
-				return (T)"[{\"cabId\":1,\"name\":\"Ola\",\"type\":\"Micro\",\"destination\":\"BLR\",\"price\":500.0},{\"cabId\":2,\"name\":\"Ola\",\"type\":\"Macro\",\"destination\":\"BLR\",\"price\":600.0}]";
-			}
-			
-		});
-		template.sendBodyAndHeader("direct:getCabs", "{}", "destination", "BLR");
-		mockGetCabsRest.assertIsSatisfied();
-	}
+	@EndpointInject("mock:getFlightsAndRailways")
+	private MockEndpoint mockGetFlightsAndRailways;
 	
 	@Test
-	void testGetFlights() throws InterruptedException {
-		mockGetFlightsRest.expectedHeaderReceived("source", "PUN");
-		mockGetFlightsRest.expectedHeaderReceived("destination", "BLR");
+	void testGetFlightsAndRailways() throws InterruptedException {
 		mockGetFlightsRest.returnReplyBody(new Expression() {
 
 			@Override
@@ -76,17 +48,6 @@ class HolidayPackageRouteTest{
 			}
 			
 		});
-		Map<String, Object> headers = new HashMap<>();
-		headers.put("source", "PUN");
-		headers.put("destination", "BLR");
-		template.sendBodyAndHeaders("direct:getFlights", "{}", headers);
-		mockGetFlightsRest.assertIsSatisfied();
-	}
-	
-	@Test
-	void testGetRailways() throws InterruptedException {
-		mockGetRailwaysRest.expectedHeaderReceived("source", "PUN");
-		mockGetRailwaysRest.expectedHeaderReceived("destination", "BLR");
 		mockGetRailwaysRest.returnReplyBody(new Expression() {
 
 			@Override
@@ -95,10 +56,30 @@ class HolidayPackageRouteTest{
 			}
 			
 		});
+		
+		List<Package> expectedPackages = new ArrayList<>();
+		expectedPackages.add(Package.builder()
+									.transport(new Transport(1, "flight", "Air India", "PUN", "BLR", 5234))
+									.build());
+		expectedPackages.add(new Package(null,
+				new Transport(4, "flight", "Indigo", "PUN", "BLR", 5034),
+				null,
+				null));
+		expectedPackages.add(new Package(null,
+				new Transport(1, "railway", "Shatabdi", "PUN", "BLR", 3500),
+				null,
+				null));
+		expectedPackages.add(new Package(null,
+				new Transport(2, "railway", "Duranto", "PUN", "BLR", 3900),
+				null,
+				null));
+		
 		Map<String, Object> headers = new HashMap<>();
 		headers.put("source", "PUN");
 		headers.put("destination", "BLR");
-		template.sendBodyAndHeaders("direct:getRailways", "{}", headers);
-		mockGetRailwaysRest.assertIsSatisfied();
+		template.sendBodyAndHeaders("direct:getFlightsAndRailways", "{}", headers);
+		List<Package> actualPackages = mockGetFlightsAndRailways.getExchanges().get(0).getIn().getBody(List.class);
+		assertIterableEquals(expectedPackages, actualPackages);
 	}
+	
 }
