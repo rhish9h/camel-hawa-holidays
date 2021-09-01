@@ -76,9 +76,10 @@ public class HolidayPackageRoute extends RouteBuilder {
 			.unmarshal(new ListJacksonDataFormat(Cab.class))
 			.log("${body}");
 		
-		from("direct:getHotels")
+		from("{{route.getHotels.start}}")
 			.removeHeaders("CamelHttp*")
-			.recipientList(simple("rest:get:/camel/hotels?bridgeEndpoint=true&city={destination}"))
+			.recipientList(simple("{{route.getHotels.restEndpoint}}"))
+//			.log("${body}")
 			.unmarshal(new ListJacksonDataFormat(Hotel.class))
 			.log("${body}");
 	}
