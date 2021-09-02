@@ -23,7 +23,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-		
+
 		<!-- camel -->
 		<dependency>
 			<groupId>org.apache.camel.springboot</groupId>
@@ -54,6 +54,12 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- used in prod -->
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
